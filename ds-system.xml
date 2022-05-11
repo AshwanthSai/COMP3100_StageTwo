@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- system information generated for ds-sim@MQ, 14-Feb, 2022 @ MQ - client-server -->
+<system>
+	<servers>
+		<server type="juju" limit="2" bootupTime="60" hourlyRate="0.20" cores="2" memory="4000" disk="16000" />
+		<server type="joon" limit="2" bootupTime="60" hourlyRate="0.40" cores="4" memory="16000" disk="64000" />
+		<server type="super-silk" limit="1" bootupTime="80" hourlyRate="0.80" cores="16" memory="64000" disk="512000" />
+	</servers>
+</system>
