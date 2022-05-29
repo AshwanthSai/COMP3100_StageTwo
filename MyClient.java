@@ -88,7 +88,7 @@ public class MyClient {
 					// Find and Store the Largest Active Server. 
 
 				
-					serverPointer = serverCount - 1;
+					serverPointer = 0;
 
 					// Make a Static Copy, of SCHD Server
 
@@ -102,7 +102,8 @@ public class MyClient {
 						System.out.println(ServerID);
 						send("CNTJ " + ServerType + " " + ServerID + " " + "2");
 						str = recieve();
-						if(LastSCHDServer_IsCapable(core, memory, disk) || Integer.parseInt(str) < 2){
+						if(LastSCHDServer_IsCapable(core, memory, disk) || Integer.parseInt(str) < 3){
+							updateLastSCHDServerValues(core, memory, disk);
 							serverToSchedule = largestActiveServer;
 						} 
 					} else {
@@ -111,11 +112,8 @@ public class MyClient {
 					
 					// Check to Make Sure Server Reply is JOBN
 					if (str.equals(".") && job.split(" ")[0].equals("JOBN")) {
-							if(LastSCHDServer_IsCapable(core, memory, disk)){
-								updateLastSCHDServerValues(core, memory, disk);
-							}
-							send("SCHD " + jobID + " " + serverToSchedule[0] + " " + serverToSchedule[1]);
-						
+
+						send("SCHD " + jobID + " " + serverToSchedule[0] + " " + serverToSchedule[1]);
 						// Increase Counter
 						// serverPointer++;
 
