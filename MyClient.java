@@ -88,7 +88,8 @@ public class MyClient {
 						}
 					}
 
-					// First available Server is Choosen
+					// First available Server is Choosen. Servers are send from lowest cores to highest from one type to another.
+					// Picking First One makes sure, cores is less, server rental cost is less.
 					serverPointer = 0;
 
 					send("OK");
