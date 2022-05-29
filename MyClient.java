@@ -7,8 +7,9 @@ public class MyClient {
     public static DataOutputStream outputStream;
     public static BufferedReader inputStream;
     public static List<String> burstServers;
-	public static volatile String[] largestActiveServer;
 	public static String[] serverToSchedule;
+
+	public static String[] lastSCHDServer;
 
     public static void main(String[] args){
 		try {
@@ -19,8 +20,9 @@ public class MyClient {
 			outputStream = new DataOutputStream(clientSocket.getOutputStream());
 			inputStream = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             performHandshake();
-
-		    burstServers = new ArrayList<>(); // Stores servers from largest to smallest.
+			
+			//Servers which are available Immediately(No Running Jobs) are names Burst Servers
+		    burstServers = new ArrayList<>(); 
 			int serverPointer = 0; //Pointer for a List of Arrays with Servers
 			String str = "";
 			boolean parseIntoBurstServers = true;//Boolean Flag to run conditional only once
@@ -31,6 +33,7 @@ public class MyClient {
                 send("REDY");
                 str = recieve(); // JOBN Stored to Job.
 				
+				// Loop Handles, JCPL Pings from Servers;
 				while(str.split(" ")[0].equals("JCPL")){
 					send("REDY");
 					str = recieve();
@@ -40,8 +43,9 @@ public class MyClient {
                     break;
                 } else {
 
+					// Clear Arraylist of Burst Servers, Servers Returned For Every Job is Different
 					burstServers.clear();
-                    // JOBN 101 3 380 2 900 2500
+
 					// jobID identifies the current job ID
 					String job  = str; // Making Copy of JobN
 					int jobID = Integer.parseInt(str.split(" ")[2]);
@@ -50,12 +54,14 @@ public class MyClient {
 					int memory = Integer.parseInt(str.split(" ")[5]);;
 					int disk = Integer.parseInt(str.split(" ")[6]);;
 
+					// Gets all burst servers
                     send("GETS Avail "+ core + " " + memory + " " + disk);
 					str = recieve();
 
 					String flag = (str.split(" ")[1]);
 					System.out.println("Flag recieved is `" + flag + " `");
-			
+					
+					// If no burst servers, fetch all available servers [Capable to run job, but busy]
 					if(flag.equals("0")){
 						send("OK");
 						str = recieve();
@@ -81,48 +87,38 @@ public class MyClient {
 								burstServers.add(servers[i]);
 						}
 					}
-					
-					// ServersToSchedule Contains data of single largest array.
-					// Values are Reassigned every iteration of while loop.
 
-					// Find and Store the Largest Active Server. 
-
-				
+					// First available Server is Choosen
 					serverPointer = 0;
-
-					// Make a Static Copy, of SCHD Server
 
 					send("OK");
 					str = recieve();
 					
-					if(largestActiveServer != null){
-						String ServerType =  largestActiveServer[0];
-						System.out.println(ServerType);
-						String ServerID =   largestActiveServer[1] ;
-						System.out.println(ServerID);
+					// Checks if there is a Last SCHD server Available
+					if(lastSCHDServer != null){
+						String ServerType =  lastSCHDServer[0];
+						String ServerID =   lastSCHDServer[1] ;
+						// Checks how many jobs the particular server is running
 						send("CNTJ " + ServerType + " " + ServerID + " " + "2");
 						str = recieve();
-						if(LastSCHDServer_IsCapable(core, memory, disk) || Integer.parseInt(str) < 3){
+						int runningJobs = Integer.parseInt(str);
+		/* Checks, If the present job can be run on the last SCHD server and the running processes is not more than 2.
+		Minimum cores for a job is one, majority of servers have atleast two Cores. Prevents Quening of Jobs for server(Maximising Turnaround Time),
+		making sure atmost two jobs are always running(Maximising Resource Utilization)
+		*/
+						if(LastSCHDServer_IsCapable(core, memory, disk) && runningJobs < 3){
 							updateLastSCHDServerValues(core, memory, disk);
-							serverToSchedule = largestActiveServer;
+							serverToSchedule = lastSCHDServer;
 						} 
 					} else {
+						// Fetch Server from DATA Sent
 						serverToSchedule = burstServers.get(serverPointer).split(" ");
 					}
 					
 					// Check to Make Sure Server Reply is JOBN
 					if (str.equals(".") && job.split(" ")[0].equals("JOBN")) {
-
 						send("SCHD " + jobID + " " + serverToSchedule[0] + " " + serverToSchedule[1]);
-						// Increase Counter
-						// serverPointer++;
-
 						str = recieve();
-						
-						// Reset Counter Once You hit Limit
-						if(serverPointer == burstServers.size()) {
-							serverPointer = 0;
-						}
 
 					}
 				}
@@ -191,29 +187,31 @@ public class MyClient {
         } catch (Exception e){
             System.out.println(e);
         }
-        
     }
 
-	public static synchronized void updateLastSCHDServerValues(int core, int memory, int disk){
-		int size = largestActiveServer.length - 1;
+	/*
+		Utility Method used updateLastSCHDServer values;
+	*/
+	public static void updateLastSCHDServerValues(int core, int memory, int disk){
+		int size = lastSCHDServer.length - 1;
 
-		Integer newCore = Integer.parseInt(largestActiveServer[size - 4]) - core;
-		Integer newMemory = Integer.parseInt(largestActiveServer[size - 3]) - memory;
-		Integer newDisk = Integer.parseInt(largestActiveServer[size - 2]) - memory;
+		Integer newCore = Integer.parseInt(lastSCHDServer[size - 4]) - core;
+		Integer newMemory = Integer.parseInt(lastSCHDServer[size - 3]) - memory;
+		Integer newDisk = Integer.parseInt(lastSCHDServer[size - 2]) - memory;
 
-		largestActiveServer[size - 4] = newCore.toString();
-		largestActiveServer[size - 3] = newMemory.toString();
-		largestActiveServer[size - 2] = newDisk.toString();
+		lastSCHDServer[size - 4] = newCore.toString();
+		lastSCHDServer[size - 3] = newMemory.toString();
+		lastSCHDServer[size - 2] = newDisk.toString();
 	}
 
+	/*
+		Utility Method used to check if LastSCHDServer is capable of running the new JOB.
+	*/
 	public static boolean LastSCHDServer_IsCapable(int core, int memory, int disk){
-		// Check if Capable, Else Return False
-		// Update Values
-		// Return True
-		int size = largestActiveServer.length - 1;
-		Integer newCore = Integer.parseInt(largestActiveServer[size - 4]) - core;
-		Integer newMemory = Integer.parseInt(largestActiveServer[size - 3]) - memory;
-		Integer newDisk = Integer.parseInt(largestActiveServer[size - 2]) - memory;
+		int size = lastSCHDServer.length - 1;
+		Integer newCore = Integer.parseInt(lastSCHDServer[size - 4]) - core;
+		Integer newMemory = Integer.parseInt(lastSCHDServer[size - 3]) - memory;
+		Integer newDisk = Integer.parseInt(lastSCHDServer[size - 2]) - memory;
 		if(newCore > 0 && newMemory > 0 && newDisk > 0){
 			updateLastSCHDServerValues(newCore, newMemory, newDisk);
 			return true;
@@ -221,7 +219,4 @@ public class MyClient {
 		return false;
 	}
 
-	public static Boolean checkIfServerIdle(String ServerType, String ServerID){
-		return false;
-	}
 }
