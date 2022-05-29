@@ -6,7 +6,8 @@ public class MyClient {
     public static Socket clientSocket;
     public static DataOutputStream outputStream;
     public static BufferedReader inputStream;
-    public static List<String> largestServers;
+    public static List<String> burstServers;
+	public static String lastSHDServer;
     public static void main(String[] args){
 		try {
 			/*
@@ -17,10 +18,10 @@ public class MyClient {
 			inputStream = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             performHandshake();
 
-		    largestServers = new ArrayList<>(); // Stores servers from largest to smallest.
+		    burstServers = new ArrayList<>(); // Stores servers from largest to smallest.
 			int serverPointer = 0; //Pointer for a List of Arrays with Servers
 			String str = "";
-			boolean sortServers = true;//Boolean Flag to run conditional only once
+			boolean parseIntoBurstServers = true;//Boolean Flag to run conditional only once
 
 			//Loop Keeps Running Until, None is Recieved.
 			while (true) {
@@ -36,8 +37,9 @@ public class MyClient {
                 if(str.equals("NONE")){
                     break;
                 } else {
-			
-                    			//JOBN 101 3 380 2 900 2500
+
+					burstServers.clear();
+                    // JOBN 101 3 380 2 900 2500
 					// jobID identifies the current job ID
 					String job  = str; // Making Copy of JobN
 					int jobID = Integer.parseInt(str.split(" ")[2]);
@@ -61,6 +63,7 @@ public class MyClient {
 					
 					//Server Count is the total number of servers available
 					int serverCount = Integer.parseInt(str.split(" ")[1]);
+					System.out.println("ServerCount + " + serverCount);
 					send("OK");
 					
 					// Server Array of String Type, with Server Count Limit.
@@ -71,38 +74,16 @@ public class MyClient {
 						servers[i] = recieve();
 					}
 
-
-					if(sortServers){
-						/* Identifiers for Server Cores, Name[Conditions of Largest Server] */
-						int maxCore = 0; 
-						String serverName = "";
-
-						/* 
-						Find Largest Server, By Iterating Entire Server List Array
-						Comparing maxCore, If larger, update Server Name, Cores available. 
-						*/ 
-
-						for (int i = 0; i < servers.length; i++) {
-							if(Integer.parseInt(servers[i].split(" ")[4]) > maxCore) {
-								maxCore = Integer.parseInt(servers[i].split(" ")[4]);
-								serverName = servers[i].split(" ")[0]; 
-							}
-						}
-
-						//All Servers with Same name, Same Cores are added to the Largest Servers List.
+					
+					if(parseIntoBurstServers){
 						for(int i = 0; i < servers.length; i++) {
-							if(servers[i].split(" ")[0].equals(serverName) && Integer.parseInt(servers[i].split(" ")[4]) == maxCore) {
-								largestServers.add(servers[i]);
-							}
+								burstServers.add(servers[i]);
 						}
-
-						//Set Flag to False;
-						sortServers = false;
 					}
 					
 					// ServersToSchedule Contains data of single largest array.
 					// Values are Reassigned every iteration of while loop.
-					String[] serverToSchedule = largestServers.get(serverPointer).split(" ");
+					String[] serverToSchedule = burstServers.get(serverPointer).split(" ");
 					
 					send("OK");
 					str = recieve();
@@ -110,18 +91,19 @@ public class MyClient {
 
 					// Check to Make Sure Server Reply is JOBN
 					if (str.equals(".") && job.split(" ")[0].equals("JOBN")) {
-						//Increase Counter
-						serverPointer++;
-
+						
 						send("SCHD " + jobID + " " + serverToSchedule[0] + " " + serverToSchedule[1]);
+
+						// Increase Counter
+						// serverPointer++;
 
 						str = recieve();
 						
-
 						// Reset Counter Once You hit Limit
-						if(serverPointer == largestServers.size()) {
+						if(serverPointer == burstServers.size()) {
 							serverPointer = 0;
 						}
+
 					}
 				}
 			}
@@ -191,5 +173,9 @@ public class MyClient {
         }
         
     }
+
+	public static void checkIfLastServerCapable() {
+
+	}
 
 }
