@@ -36,14 +36,29 @@ public class MyClient {
                 if(str.equals("NONE")){
                     break;
                 } else {
-		
+			
+                    			//JOBN 101 3 380 2 900 2500
 					// jobID identifies the current job ID
-					int jobID = Integer.parseInt(str.split(" ")[2]);
 					String job  = str; // Making Copy of JobN
+					int jobID = Integer.parseInt(str.split(" ")[2]);
+					System.out.println("JOBID " + jobID);
+					String job  = str; // Making Copy of JobN
+					int core = Integer.parseInt(str.split(" ")[4]);
+					int memory = Integer.parseInt(str.split(" ")[5]);;
+					int disk = Integer.parseInt(str.split(" ")[6]);;
 
-                    send("GETS All");
+					
+                    			send("GETS Avail "+ core + " " + memory + " " + disk);
 					str = recieve();
 
+					String flag = (str.split(" ")[1]);
+					System.out.println("Flag recieved is `" + flag + " `");
+			
+					if(!flag.equals(".")){
+						send("GETS Capable "+ core + " " + memory + " " + disk);
+						str = recieve();
+					}
+					
 					//Server Count is the total number of servers available
 					int serverCount = Integer.parseInt(str.split(" ")[1]);
 					send("OK");
