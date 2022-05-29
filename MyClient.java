@@ -7,7 +7,9 @@ public class MyClient {
     public static DataOutputStream outputStream;
     public static BufferedReader inputStream;
     public static List<String> burstServers;
-	public static String lastSHDServer;
+	public static String[] largestActiveServer;
+	public static String[] serverToSchedule;
+
     public static void main(String[] args){
 		try {
 			/*
@@ -83,8 +85,23 @@ public class MyClient {
 					
 					// ServersToSchedule Contains data of single largest array.
 					// Values are Reassigned every iteration of while loop.
-					String[] serverToSchedule = burstServers.get(serverPointer).split(" ");
+
+					// Find and Store the Largest Active Server. 
 					
+					/*
+					if(!burstServers.isEmpty()){
+						largestActiveServer = burstServers.get(burstServers.size() - 1).split(" ");
+						send("CNTJ " + );
+					}
+					*/
+
+					serverPointer = serverCount - 1;
+					serverToSchedule = burstServers.get(serverPointer).split(" ");
+
+					for (String string : serverToSchedule) {
+						System.out.print(string + " ");
+					}
+
 					send("OK");
 					str = recieve();
 					
