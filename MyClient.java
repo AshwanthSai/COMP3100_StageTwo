@@ -41,7 +41,7 @@ public class MyClient {
 					// jobID identifies the current job ID
 					String job  = str; // Making Copy of JobN
 					int jobID = Integer.parseInt(str.split(" ")[2]);
-					System.out.println("JOBID " + jobID);
+
 					int core = Integer.parseInt(str.split(" ")[4]);
 					int memory = Integer.parseInt(str.split(" ")[5]);;
 					int disk = Integer.parseInt(str.split(" ")[6]);;
@@ -52,7 +52,9 @@ public class MyClient {
 					String flag = (str.split(" ")[1]);
 					System.out.println("Flag recieved is `" + flag + " `");
 			
-					if(flag.equals(".")){
+					if(flag.equals("0")){
+						send("OK");
+						str = recieve();
 						send("GETS Capable "+ core + " " + memory + " " + disk);
 						str = recieve();
 					}
@@ -112,6 +114,7 @@ public class MyClient {
 						serverPointer++;
 
 						send("SCHD " + jobID + " " + serverToSchedule[0] + " " + serverToSchedule[1]);
+
 						str = recieve();
 						
 
