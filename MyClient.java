@@ -7,7 +7,7 @@ public class MyClient {
     public static DataOutputStream outputStream;
     public static BufferedReader inputStream;
     public static List<String> burstServers;
-	public static String[] largestActiveServer;
+	public static volatile String[] largestActiveServer;
 	public static String[] serverToSchedule;
 
     public static void main(String[] args){
@@ -76,7 +76,6 @@ public class MyClient {
 						servers[i] = recieve();
 					}
 
-					
 					if(parseIntoBurstServers){
 						for(int i = 0; i < servers.length; i++) {
 								burstServers.add(servers[i]);
@@ -87,30 +86,34 @@ public class MyClient {
 					// Values are Reassigned every iteration of while loop.
 
 					// Find and Store the Largest Active Server. 
-					
-					/*
-					if(!burstServers.isEmpty()){
-						largestActiveServer = burstServers.get(burstServers.size() - 1).split(" ");
-						send("CNTJ " + );
-					}
-					*/
 
+				
 					serverPointer = serverCount - 1;
-					serverToSchedule = burstServers.get(serverPointer).split(" ");
 
-					for (String string : serverToSchedule) {
-						System.out.print(string + " ");
-					}
+					// Make a Static Copy, of SCHD Server
+					largestActiveServer = serverToSchedule;
 
 					send("OK");
 					str = recieve();
-					
 
+					if(largestActiveServer != null){
+						String ServerType =  largestActiveServer[0];
+						String ServerID =   largestActiveServer[1] ;
+						Boolean guard = checkIfServerIdle(ServerType,ServerID);
+						if(LastSCHDServer_IsCapable(core, memory, disk) || guard ){
+							serverToSchedule = largestActiveServer;
+						} 
+					} else {
+						serverToSchedule = burstServers.get(serverPointer).split(" ");
+					}
+					
 					// Check to Make Sure Server Reply is JOBN
 					if (str.equals(".") && job.split(" ")[0].equals("JOBN")) {
+							if(LastSCHDServer_IsCapable(core, memory, disk)){
+								updateLastSCHDServerValues(core, memory, disk);
+							}
+							send("SCHD " + jobID + " " + serverToSchedule[0] + " " + serverToSchedule[1]);
 						
-						send("SCHD " + jobID + " " + serverToSchedule[0] + " " + serverToSchedule[1]);
-
 						// Increase Counter
 						// serverPointer++;
 
@@ -191,8 +194,39 @@ public class MyClient {
         
     }
 
-	public static void checkIfLastServerCapable() {
+	public static synchronized void updateLastSCHDServerValues(int core, int memory, int disk){
+		int size = largestActiveServer.length - 1;
 
+		Integer newCore = Integer.parseInt(largestActiveServer[size - 4]) - core;
+		Integer newMemory = Integer.parseInt(largestActiveServer[size - 3]) - memory;
+		Integer newDisk = Integer.parseInt(largestActiveServer[size - 2]) - memory;
+
+		largestActiveServer[size - 4] = newCore.toString();
+		largestActiveServer[size - 3] = newMemory.toString();
+		largestActiveServer[size - 2] = newDisk.toString();
 	}
 
+	public static boolean LastSCHDServer_IsCapable(int core, int memory, int disk){
+		// Check if Capable, Else Return False
+		// Update Values
+		// Return True
+		int size = largestActiveServer.length - 1;
+		Integer newCore = Integer.parseInt(largestActiveServer[size - 4]) - core;
+		Integer newMemory = Integer.parseInt(largestActiveServer[size - 3]) - memory;
+		Integer newDisk = Integer.parseInt(largestActiveServer[size - 2]) - memory;
+		if(newCore > 0 && newMemory > 0 && newDisk > 0){
+			updateLastSCHDServerValues(newCore, newMemory, newDisk);
+			return true;
+		}
+		return false;
+	}
+
+	public static Boolean checkIfServerIdle(String ServerType, String ServerID) throws IOException{
+		send("CNTJ " + ServerType + " " + ServerID + " " + "2");
+		String str = recieve();
+		if(Integer.parseInt(str) < 2){
+			return true;
+		}
+		return false;
+	}
 }
