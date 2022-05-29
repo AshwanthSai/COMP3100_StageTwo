@@ -16,7 +16,7 @@ public class MyClient {
 			outputStream = new DataOutputStream(clientSocket.getOutputStream());
 			inputStream = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             performHandshake();
-
+			
 		    largestServers = new ArrayList<>(); // Stores servers from largest to smallest.
 			int serverPointer = 0; //Pointer for a List of Arrays with Servers
 			String str = "";
@@ -27,8 +27,13 @@ public class MyClient {
 
                 send("REDY");
                 str = recieve(); // JOBN Stored to Job.
+				while(str.split(" ")[0].equals("JCPL")){
+					send("REDY");
+					str = recieve();
+				}
 				
-                if(str.equals("NONE") || str.split(" ")[0].equals("JCPL")){
+
+                if(str.equals("NONE")){
                     break;
                 } else {
 					
@@ -55,6 +60,8 @@ public class MyClient {
 					// SCHD jobID serverType serverID
 
 					for(int i = 1 ; i < count ; i++){
+						//To finish recieving cycle, we are only conncered with the 
+						// First Entry
 						recieve();
 					}
 
