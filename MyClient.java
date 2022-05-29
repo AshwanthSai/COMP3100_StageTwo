@@ -28,10 +28,10 @@ public class MyClient {
                 send("REDY");
                 str = recieve(); // JOBN Stored to Job.
 				
-		while(str.split(" ")[0].equals("JCPL")){
-			send("REDY");
-			str = recieve();
-		}
+				while(str.split(" ")[0].equals("JCPL")){
+					send("REDY");
+					str = recieve();
+				}
 				
                 if(str.equals("NONE")){
                     break;
@@ -42,19 +42,17 @@ public class MyClient {
 					String job  = str; // Making Copy of JobN
 					int jobID = Integer.parseInt(str.split(" ")[2]);
 					System.out.println("JOBID " + jobID);
-					String job  = str; // Making Copy of JobN
 					int core = Integer.parseInt(str.split(" ")[4]);
 					int memory = Integer.parseInt(str.split(" ")[5]);;
 					int disk = Integer.parseInt(str.split(" ")[6]);;
 
-					
-                    			send("GETS Avail "+ core + " " + memory + " " + disk);
+                    send("GETS Avail "+ core + " " + memory + " " + disk);
 					str = recieve();
 
 					String flag = (str.split(" ")[1]);
 					System.out.println("Flag recieved is `" + flag + " `");
 			
-					if(!flag.equals(".")){
+					if(flag.equals(".")){
 						send("GETS Capable "+ core + " " + memory + " " + disk);
 						str = recieve();
 					}
