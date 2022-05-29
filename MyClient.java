@@ -16,7 +16,7 @@ public class MyClient {
 			outputStream = new DataOutputStream(clientSocket.getOutputStream());
 			inputStream = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             performHandshake();
-			
+
 		    largestServers = new ArrayList<>(); // Stores servers from largest to smallest.
 			int serverPointer = 0; //Pointer for a List of Arrays with Servers
 			String str = "";
@@ -24,61 +24,88 @@ public class MyClient {
 
 			//Loop Keeps Running Until, None is Recieved.
 			while (true) {
-
+				
                 send("REDY");
                 str = recieve(); // JOBN Stored to Job.
-				while(str.split(" ")[0].equals("JCPL")){
-					send("REDY");
-					str = recieve();
-				}
 				
-
+		while(str.split(" ")[0].equals("JCPL")){
+			send("REDY");
+			str = recieve();
+		}
+				
                 if(str.equals("NONE")){
                     break;
                 } else {
-					
-					//JOBN 101 3 380 2 900 2500
+		
 					// jobID identifies the current job ID
 					int jobID = Integer.parseInt(str.split(" ")[2]);
-					System.out.println("JOBID " + jobID);
 					String job  = str; // Making Copy of JobN
-					int core = Integer.parseInt(str.split(" ")[4]);
-					int memory = Integer.parseInt(str.split(" ")[5]);;
-					int disk = Integer.parseInt(str.split(" ")[6]);;
 
-					
-                    send("GETS Capable "+ core + " " + memory + " " + disk);
-					str = recieve();	
-					System.out.println(str);
-					int count = Integer.parseInt(str.split(" ")[1]);
-					send("OK");
+                    send("GETS All");
 					str = recieve();
-					System.out.println(str);
-					String serverType = (str.split(" ")[0]);
-					String server = str.split(" ")[1];
-					int serverID = Integer.parseInt(server);
-					// SCHD jobID serverType serverID
 
-					for(int i = 1 ; i < count ; i++){
-						//To finish recieving cycle, we are only conncered with the 
-						// First Entry
-						recieve();
+					//Server Count is the total number of servers available
+					int serverCount = Integer.parseInt(str.split(" ")[1]);
+					send("OK");
+					
+					// Server Array of String Type, with Server Count Limit.
+					String[] servers = new String[serverCount];	
+					
+					// Servers are Stored Line By Line.
+					for (int i = 0; i < serverCount; i++) {
+						servers[i] = recieve();
 					}
 
-					//juju 0 booting 120 0 2500 13100 1 0
+
+					if(sortServers){
+						/* Identifiers for Server Cores, Name[Conditions of Largest Server] */
+						int maxCore = 0; 
+						String serverName = "";
+
+						/* 
+						Find Largest Server, By Iterating Entire Server List Array
+						Comparing maxCore, If larger, update Server Name, Cores available. 
+						*/ 
+
+						for (int i = 0; i < servers.length; i++) {
+							if(Integer.parseInt(servers[i].split(" ")[4]) > maxCore) {
+								maxCore = Integer.parseInt(servers[i].split(" ")[4]);
+								serverName = servers[i].split(" ")[0]; 
+							}
+						}
+
+						//All Servers with Same name, Same Cores are added to the Largest Servers List.
+						for(int i = 0; i < servers.length; i++) {
+							if(servers[i].split(" ")[0].equals(serverName) && Integer.parseInt(servers[i].split(" ")[4]) == maxCore) {
+								largestServers.add(servers[i]);
+							}
+						}
+
+						//Set Flag to False;
+						sortServers = false;
+					}
+					
+					// ServersToSchedule Contains data of single largest array.
+					// Values are Reassigned every iteration of while loop.
+					String[] serverToSchedule = largestServers.get(serverPointer).split(" ");
+					
 					send("OK");
 					str = recieve();
-				
+					
 
-					// && job.split(" ")[0].equals("JOBN"))
 					// Check to Make Sure Server Reply is JOBN
 					if (str.equals(".") && job.split(" ")[0].equals("JOBN")) {
-						System.out.println("SCHD" + " " + jobID + " " + serverType + " " + serverID);
-						send("SCHD" + " " + jobID + " " + serverType + " " + serverID);
-					}
-					str = recieve();
-					if(str.equals("OK")){
-						continue;
+						//Increase Counter
+						serverPointer++;
+
+						send("SCHD " + jobID + " " + serverToSchedule[0] + " " + serverToSchedule[1]);
+						str = recieve();
+						
+
+						// Reset Counter Once You hit Limit
+						if(serverPointer == largestServers.size()) {
+							serverPointer = 0;
+						}
 					}
 				}
 			}
