@@ -91,16 +91,18 @@ public class MyClient {
 					serverPointer = serverCount - 1;
 
 					// Make a Static Copy, of SCHD Server
-					largestActiveServer = serverToSchedule;
 
 					send("OK");
 					str = recieve();
-
+					
 					if(largestActiveServer != null){
 						String ServerType =  largestActiveServer[0];
+						System.out.println(ServerType);
 						String ServerID =   largestActiveServer[1] ;
-						Boolean guard = checkIfServerIdle(ServerType,ServerID);
-						if(LastSCHDServer_IsCapable(core, memory, disk) || guard ){
+						System.out.println(ServerID);
+						send("CNTJ " + ServerType + " " + ServerID + " " + "2");
+						str = recieve();
+						if(LastSCHDServer_IsCapable(core, memory, disk) || Integer.parseInt(str) < 2){
 							serverToSchedule = largestActiveServer;
 						} 
 					} else {
@@ -221,12 +223,7 @@ public class MyClient {
 		return false;
 	}
 
-	public static Boolean checkIfServerIdle(String ServerType, String ServerID) throws IOException{
-		send("CNTJ " + ServerType + " " + ServerID + " " + "2");
-		String str = recieve();
-		if(Integer.parseInt(str) < 2){
-			return true;
-		}
+	public static Boolean checkIfServerIdle(String ServerType, String ServerID){
 		return false;
 	}
 }
