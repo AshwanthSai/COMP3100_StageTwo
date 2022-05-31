@@ -107,7 +107,7 @@ public class MyClient {
 		Minimum cores for a job is one, majority of servers have atleast two Cores. Prevents Quening of Jobs for server(Maximising Turnaround Time),
 		making sure atmost two jobs are always running(Maximising Resource Utilization)
 		*/
-						if(LastSCHDServer_IsCapable(core, memory, disk) && runningJobs < 3){
+						if(LastSCHDServer_IsCapable(core, memory, disk) && runningJobs < 2){
 							updateLastSCHDServerValues(core, memory, disk);
 							serverToSchedule = lastSCHDServer;
 						} 
