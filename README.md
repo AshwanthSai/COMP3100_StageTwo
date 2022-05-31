@@ -1,7 +1,7 @@
 # COMP3100_StageTwo
 This repo contains code, implementation of a Custom Algorithm for Scheduling JOBS to Servers. With objective to reduce average turnaroundtime, resource utilization keeping the Rental Rate as optimal as possible.
 
-The algorithm beats All Four Base Line Algorithms [First Capable, FirstFit, BestFit, WorstFit] with respect to turnaround time. With very close values for Resource utilization as compared to FF,BF beating FC and WF. 
+The algorithm beats All Four Base Line Algorithms [First Capable, FirstFit, BestFit, WorstFit] with respect to turnaround time. With very close values for Resource utilization as compared to FF,BF beating FC and WF. Also providing reduced costs as compared to WF
 
 Check Screenshots for more proof. 
 
