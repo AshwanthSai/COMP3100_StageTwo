@@ -102,11 +102,11 @@ public class MyClient {
 						send("CNTJ " + ServerType + " " + ServerID + " " + "2");
 						str = recieve();
 						int runningJobs = Integer.parseInt(str);
-		/* Checks, If the present job can be run on the last SCHD server and the running processes is not more than 2.
+		/* Checks, If the present job can be run on the last SCHD server and the running processes is not more than 1.
 		Minimum cores for a job is one, majority of servers have atleast two Cores. Prevents Quening of Jobs for server(Maximising Turnaround Time),
 		making sure atmost two jobs are always running(Maximising Resource Utilization)
 		*/
-						if(LastSCHDServer_IsCapable(core, memory, disk) && runningJobs < 3){
+						if(LastSCHDServer_IsCapable(core, memory, disk) && runningJobs < 2){
 							updateLastSCHDServerValues(core, memory, disk);
 							serverToSchedule = lastSCHDServer;
 						} 
