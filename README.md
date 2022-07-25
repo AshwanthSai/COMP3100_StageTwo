@@ -3,7 +3,7 @@ This repo contains code, implementation of a Custom Algorithm for Scheduling JOB
 
 The algorithm beats All Four Base Line Algorithms [First Capable, FirstFit, BestFit, WorstFit] with respect to turnaround time. With very close values for Resource utilization as compared to FF,BF beating FC and WF. Also providing reduced costs as compared to WF
 
-Check Screenshots for more proof. 
+![image](https://user-images.githubusercontent.com/80021968/180771431-165b8ea9-7969-420c-9e8a-7f0d67d626c2.png)
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
 
